@@ -15,7 +15,7 @@ public class GameBoard : MonoBehaviour
     [SerializeField] float _spacing = 0.5f;
 
     [SerializeField] Tile[] _tiles;
-    [SerializeField] Wall[][] _walls;
+    [SerializeField] Wall[] _walls;
 
     Dictionary<Vector2Int, bool> _wallPlacedBetweenTiles = new Dictionary<Vector2Int, bool>();
     Dictionary<Vector2Int, bool> _wallPlacedAtCoordinates = new Dictionary<Vector2Int, bool>();
@@ -24,7 +24,10 @@ public class GameBoard : MonoBehaviour
 
     public Wall[] GetPlayerWalls(int playerID)
     {
-        return _walls[playerID];
+        Wall[] walls = new Wall[_size];
+        for (int i = 0; i < _size; i++)
+            walls[i] = _walls[i + playerID * _size];
+        return walls;
     }
 
     private void Awake()
@@ -143,19 +146,13 @@ public class GameBoard : MonoBehaviour
         _tiles = new Tile[_size * _size];
         EditorUtility.SetDirty(this);
     }
-    public void Editor_ResetWalls()
+    public void Editor_ResetWalls(List<Wall> walls)
     {
-        _walls = new Wall[GameManager.PlayerCount][];
-        for (int i = 0; i < GameManager.PlayerCount; i++)
+        _walls = new Wall[walls.Count];
+        for (int i = 0; i < walls.Count; i++)
         {
-            _walls[i] = new Wall[_size];
+            _walls[i] = walls[i];
         }
-        EditorUtility.SetDirty(this);
-    }
-    public void Editor_SetWalls(List<Wall> walls, int playerID)
-    {
-        for(int i=0; i<_size; i++) 
-            _walls[playerID][i] = walls[i];
         EditorUtility.SetDirty(this);
     }
 #endif

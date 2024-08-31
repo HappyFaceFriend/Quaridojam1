@@ -30,7 +30,6 @@ public class GameBoardLayout : MonoBehaviour
             DestroyImmediate(wall.gameObject);
         _walls.Clear();
         gameBoard.Editor_ResetTiles();
-        gameBoard.Editor_ResetWalls();
 
         // Spawn tiles
         var tileSize = _tilePrefab.transform.localScale;
@@ -55,10 +54,8 @@ public class GameBoardLayout : MonoBehaviour
         }
 
         // Spawn walls
-        int playerID = 0;
         foreach (var direction in EnumeratePlayerDirections())
         {
-            List<Wall> playerWalls = new List<Wall>();
             for (int i = 0; i < gameBoard.Size + 1; i++)
             {
                 var newWall = PrefabUtility.InstantiatePrefab(_wallPrefab, transform) as Wall;
@@ -72,11 +69,9 @@ public class GameBoardLayout : MonoBehaviour
                 newWall.transform.localPosition = new Vector3(0, newWall.transform.localPosition.y, 0) + offset;
                 newWall.transform.localEulerAngles = new Vector3(0, Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg, 0);
                 _walls.Add(newWall);
-                playerWalls.Add(newWall);
             }
-            gameBoard.Editor_SetWalls(playerWalls, playerID);
-            playerID++;
         }
+        gameBoard.Editor_ResetWalls(_walls);
         EditorUtility.SetDirty(this);
 
     }
