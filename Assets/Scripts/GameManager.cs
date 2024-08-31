@@ -35,8 +35,10 @@ public class GameManager : Scenegleton<GameManager>
         base.Awake();
         _players = new Player[PlayerCount];
 
-        _players[0] = new Player("1P", _gameBoard, _pawns[0], new Vector2Int(Mathf.RoundToInt(_gameBoard.Size / 2f), 0));
-        _players[1] = new Player("2P", _gameBoard, _pawns[1], new Vector2Int(Mathf.RoundToInt(_gameBoard.Size / 2f), _gameBoard.Size - 1));
+        _players[0] = new Player("1P", _gameBoard, _pawns[0], _gameBoard.GetPlayerWalls(0), new Vector2Int(Mathf.RoundToInt(_gameBoard.Size / 2f), 0),
+                                    new WinCondition { TargetAxis = WinCondition.Axis.Y, Value = _gameBoard.Size - 1 });
+        _players[1] = new Player("2P", _gameBoard, _pawns[1], _gameBoard.GetPlayerWalls(1), new Vector2Int(Mathf.RoundToInt(_gameBoard.Size / 2f), _gameBoard.Size - 1),
+                                    new WinCondition { TargetAxis = WinCondition.Axis.Y, Value = 0 });
     }
     private void Start()
     {
@@ -55,6 +57,12 @@ public class GameManager : Scenegleton<GameManager>
             _currentTurnPlayer = _players[currentPlayerIndex];
 
             yield return PlayerTurnCoroutine(_currentTurnPlayer);
+
+            if (_currentTurnPlayer.IsAtWinPosition)
+            {
+                _gameOver = true;
+                Debug.Log(_currentTurnPlayer.Name + " wins !!");
+            }
 
             currentPlayerIndex = (currentPlayerIndex + 1) % _players.Length;
         }

@@ -96,7 +96,6 @@ public class PlayerInput : Scenegleton<PlayerInput>
     }
     public void TrySelectPawn(Pawn pawn)
     {
-        Debug.Log(pawn.name + " selected");
         if (_currentState == State.WaitingInput && _currentPlayer.Pawn == pawn)
         {
             _currentState = State.PawnSelected;
@@ -110,15 +109,13 @@ public class PlayerInput : Scenegleton<PlayerInput>
                 if (_gameBoard.IsCoordOccupiedByPawn(destinationCoordinates))
                 {
                     var jumpedDestinationCoordinates = destinationCoordinates + direction;
-                    print(destinationCoordinates);
-                    print(jumpedDestinationCoordinates);
-                    if (IsTileBlocked(_currentPlayer.Coordinates + direction, jumpedDestinationCoordinates, false))
+                    if (!_gameBoard.IsCoordInBounds(jumpedDestinationCoordinates) || _gameBoard.IsCoordOccupiedByPawn(jumpedDestinationCoordinates))
                         continue;
-                    // TODO: Check for walls diagnal move
                     if (_gameBoard.IsWallPlacedBetweenTiles(_currentPlayer.Coordinates + direction, jumpedDestinationCoordinates))
                     {
                         foreach(var diagnal in EnumeratePerpendicularDirections(direction))
                         {
+                            print(diagnal);
                             var diagnalDestination = _currentPlayer.Coordinates + diagnal;
                             if (IsTileBlocked(_currentPlayer.Coordinates + direction, diagnalDestination, false))
                                 continue;
@@ -146,7 +143,7 @@ public class PlayerInput : Scenegleton<PlayerInput>
     }
     public void TrySelectWall(Wall wall)
     {
-        if (_currentState == State.WaitingInput)
+        if (_currentState == State.WaitingInput && _currentPlayer.OwnsWall(wall))
         {
             _currentState = State.WallSelected;
             _currentSelectedWall = wall;
@@ -160,7 +157,6 @@ public class PlayerInput : Scenegleton<PlayerInput>
     }
     public void SelectTile(Tile tile)
     {
-        Debug.Log(tile.name + " selected");
         if (_currentState == State.PawnSelected)
         {
             _latestAction = new PlayerAction(PlayerAction.Type.MovePawn, tile.Coordinates);

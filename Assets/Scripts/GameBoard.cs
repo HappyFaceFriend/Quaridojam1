@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using Unity.VisualScripting;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -13,16 +14,22 @@ public class GameBoard : MonoBehaviour
     [SerializeField] int _size = 9;
     [SerializeField] float _spacing = 0.5f;
 
-    [SerializeField, HideInInspector] Tile[] _tiles;
+    [SerializeField] Tile[] _tiles;
+    [SerializeField] Wall[][] _walls;
 
     Dictionary<Vector2Int, bool> _wallPlacedBetweenTiles = new Dictionary<Vector2Int, bool>();
     Dictionary<Vector2Int, bool> _wallPlacedAtCoordinates = new Dictionary<Vector2Int, bool>();
     public int Size => _size;
     public float Spacing => _spacing;
 
+    public Wall[] GetPlayerWalls(int playerID)
+    {
+        return _walls[playerID];
+    }
+
     private void Awake()
     {
-        for(int i=0; i< _tiles.Length; i++)
+        for (int i = 0; i < _tiles.Length; i++)
         {
             _tiles[i].SetCoordinates(new Vector2Int(i % _size, i / _size));
         }
@@ -56,7 +63,7 @@ public class GameBoard : MonoBehaviour
             PlaceWallBetweenTiles(wallCoordinates, wallCoordinates + Vector2Int.up);
             PlaceWallBetweenTiles(wallCoordinates + Vector2Int.right, wallCoordinates + Vector2Int.right + Vector2Int.up);
         }
-        else 
+        else
         {
             PlaceWallBetweenTiles(wallCoordinates, wallCoordinates + Vector2Int.right);
             PlaceWallBetweenTiles(wallCoordinates + Vector2Int.up, wallCoordinates + Vector2Int.up + Vector2Int.right);
@@ -87,7 +94,7 @@ public class GameBoard : MonoBehaviour
         Vector3 cellSize = new Vector3(_tiles[0].transform.lossyScale.x + _spacing, 0, _tiles[0].transform.lossyScale.z + _spacing);
         if (_size % 2 == 1)
             position -= cellSize / 2f;
-        return new Vector2Int(Mathf.RoundToInt(position.x / cellSize.x) + Mathf.RoundToInt(_size/2f),
+        return new Vector2Int(Mathf.RoundToInt(position.x / cellSize.x) + Mathf.RoundToInt(_size / 2f),
                               Mathf.RoundToInt(position.z / cellSize.z) + Mathf.RoundToInt(_size / 2f));
     }
     public bool IsWallPlacedBetweenTiles(Vector2Int tileCoordA, Vector2Int tileCoordB)
@@ -134,6 +141,21 @@ public class GameBoard : MonoBehaviour
     public void Editor_ResetTiles()
     {
         _tiles = new Tile[_size * _size];
+        EditorUtility.SetDirty(this);
+    }
+    public void Editor_ResetWalls()
+    {
+        _walls = new Wall[GameManager.PlayerCount][];
+        for (int i = 0; i < GameManager.PlayerCount; i++)
+        {
+            _walls[i] = new Wall[_size];
+        }
+        EditorUtility.SetDirty(this);
+    }
+    public void Editor_SetWalls(List<Wall> walls, int playerID)
+    {
+        for(int i=0; i<_size; i++) 
+            _walls[playerID][i] = walls[i];
         EditorUtility.SetDirty(this);
     }
 #endif
